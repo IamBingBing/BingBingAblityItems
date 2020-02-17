@@ -1,0 +1,9 @@
+name: BingBingAblityItems
+author: "bingbing"
+version: "1.0.0_BETA"
+api: [1.0.0, 2.0.0, 3.0.0, 3.0.1]
+main: ablity_item\main
+
+commands:
+ 원소스킬:
+  default: OP
