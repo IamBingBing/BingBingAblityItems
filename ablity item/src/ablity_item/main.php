@@ -15,16 +15,21 @@ use pocketmine\utils\Config;
 
 class main extends PluginBase implements Listener{
     public $DATA = [];
+    static $instance ;
+    public function onLoad(){
+        self::$instance = $this;
+    }
     public function onEnable(){
         $this->getServer()->getPluginManager()->registerEvents($this, $this);
         @mkdir($this->getDataFolder());
         $this->cooltime = new Config($this->getDataFolder()."DATA.json" ,Config::JSON ,[]);
         $this->cool = $this->cooltime->getAll();
-        
+       
     }
-    public static function getInstance() : main{
+    public static function getclass ( ) : main{
         return self::$instance;
     }
+    
     
     public function join(PlayerJoinEvent $event){
         $name = $event->getPlayer()->getName();
@@ -36,7 +41,9 @@ class main extends PluginBase implements Listener{
     public function onCommand(CommandSender $sender, Command$command, string $label, array $args):bool{
         $item = $sender->getInventory()->getItemInHand();
         if ($command == "원소스킬" ){
+            if (isset($args[0])){
             if ($args[0] == "추가"){
+                if (isset($args[1])){
                 switch ($args[1]){
                     case "무적":
                         $item->setCustomName("무적");
@@ -68,15 +75,18 @@ class main extends PluginBase implements Listener{
                         $sender->sendMessage("야 잘못쳤잖아");
                         return true;
                         break;
-            
+                }
+                return true;
                 }
                 return true;
             }
             else {
-                $sender->sendMessage("야 잘못쳤잖아");
+                throw $sender->sendMessage("야 잘못쳤잖아");
                 return true;
+                
             }
             return true;
+            }
         }
     }
     public function touch (PlayerInteractEvent $event){
@@ -119,15 +129,19 @@ class main extends PluginBase implements Listener{
         foreach ( $this->getServer()->getOnlinePlayers() as $online){
             $onlinepos = $online->getPosition();
             $playerpos = $player->getPosition();
-            if(    ( ( $playerpos->getFloorX() - $onlinepos->getFloorX())^2 +($playerpos->getFloorY() - $onlinepos->getFloorY())^2 + ($playerpos->getFloorZ() - $onlinepos->getFloorZ())^2 ) ^1/2 <= 7  ){
+            $x = pow( $playerpos->getFloorX() - $onlinepos->getFloorX() ,2 ) +pow($playerpos->getFloorY() - $onlinepos->getFloorY() , 2) + pow($playerpos->getFloorZ() - $onlinepos->getFloorZ() , 2);
+            if(    sqrt(  (float)$x) <= 7 && $player->getPosition()->getLevel() == $onlinepos->getLevel()  ){
                 $player->teleport($onlinepos);
+            }
+            else {
+                $player->sendMessage("주변에 아무도 없다...");
             }
         }
     }
     public function fight(EntityDamageEvent $event){
         if($event->getEntity() instanceof Player){
             if($this->DATA[$event->getEntity()->getName()]["ablity"] == "무적"){
-                $event->setBaseDamage(0);
+                $event->setCancelled(true);
             }
             else {
                 return;
@@ -147,7 +161,8 @@ class time extends Task {
     }
     public function onRun(int $currentTick)
     {
-        main::getInstance()->DATA[$this->player->getName()]["ablity"] = "";
+        
+        main::getclass()->DATA[$this->player->getName()]["ablity"] = "";
         $this->player->sendMessage("무적 끝");
     }
 }
@@ -157,7 +172,7 @@ class undeadcooltime extends Task{
     }
    
     public function onRun(int $currentTick){
-        main::getInstance()->DATA[$this->player->getName()]["undeadcool"] = true;
+        main::getclass()->DATA[$this->player->getName()]["undeadcool"] = true;
         
     }
 }
@@ -167,7 +182,7 @@ class hideonbushcooltime extends Task{
         $this->player = $player;
     }
     public function onRun(int $currentTick){
-        main::getInstance()->DATA[$this->player->getName()]["hideonbushcool"] = true;
+        main::getclass()->DATA[$this->player->getName()]["hideonbushcool"] = true;
     }
 }
 
